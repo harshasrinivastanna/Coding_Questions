@@ -1,4 +1,4 @@
-# This code performs Convolution
+# This code performs 2D Convolution
 import numpy as np
 
 # generating the image 'img' and kernel 'ker'
