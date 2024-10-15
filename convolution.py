@@ -14,8 +14,20 @@ ker = np.asarray(ker)
 # ver = ((W + 2P - F)/S ) + 1
 padding = 0
 stride = 1
-hor = ( (len(img[0]) - len(ker[0]) + 2 * padding ) // stride ) + 1
-ver = ((len(img) - len(ker) + 2 * padding) // stride) + 1
+
+# Apply padding if needed
+# we create one new image 'img_z' of size (size_l,size_r) with zeros 
+# then replace the necessary rows and columns with the image 'img'
+if padding > 0:
+  size_l = len(img[0]) + 2 * padding
+  size_r = len(img) + 2 * padding
+  img_z = np.zeros((size_l,size_r),dtype=int)
+  
+  img_z[padding:len(img)+padding:1,padding:len(img[0])+padding:1] = img
+  img = img_z
+
+hor = ( (len(img[0]) - len(ker[0])) // stride ) + 1
+ver = ((len(img) - len(ker)) // stride) + 1
 
 # declaring conv matrix with the (hor,ver) size
 conv = np.zeros((hor,ver),dtype=int)
@@ -31,13 +43,14 @@ def simple_conv(A,B):
 # These loops calls simple_conv method with two arguments
 # one is the image with sliced rows and columns
 # other is the kernel
-for m in range(0,hor):
-  for n in range(0,ver):
+for m in range(0,hor * stride,stride):
+  for n in range(0,ver * stride,stride):
     row_len = m + len(ker[0])
     ver_len = n + len(ker)
-    conv[m][n] = simple_conv(img[m:row_len,n:ver_len],ker)
-    print(conv[m][n],end=" ")
-  print()
+
+    if row_len <= len(img) and ver_len <= len(img[0]):
+      conv[m//stride][n//stride] = simple_conv(img[m:row_len, n:ver_len], ker)
+
 
 '''
 example:
@@ -62,4 +75,5 @@ conv = [[196 214 212 187 141 177 181 172]
  [124 114 183 218 211 250 194 231]
  [186 171 118 256 229 221 182 194]
  [157 198 214 240 269 217 146 216]]
+we can also try with even and odd padding, even and odd stride
 '''
